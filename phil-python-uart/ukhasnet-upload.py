@@ -49,7 +49,7 @@ try:
     temp_data=''
     while 1:
        try:
-        data_line = node.readline().rstrip().strip('rx: ')
+        data_line = node.readline().rstrip().strip('rx: ').strip('tx: ')
         if(data_line.__len__() > 0):
 	    print(data_line)
             m = data_detect.match(data_line)
