@@ -14,7 +14,7 @@ upload=True
 def upload_data( line ):
   params = urllib.urlencode({'origin': gateway_callsign, 'data': line})
   headers = {"Content-type": "application/x-www-form-urlencoded","Accept": "text/plain"}
-  conn = httplib.HTTPConnection("www.ukhas.net:80")
+  conn = httplib.HTTPSConnection("www.ukhas.net")
   conn.request("POST", "/api/upload", params, headers)
   response = conn.getresponse()
   if(response.status!=200):
@@ -26,7 +26,7 @@ def upload_data( line ):
 def upload_data_rssi( line, rssi ):
   params = urllib.urlencode({'origin': gateway_callsign, 'data': line, 'rssi': rssi})
   headers = {"Content-type": "application/x-www-form-urlencoded","Accept": "text/plain"}
-  conn = httplib.HTTPConnection("www.ukhas.net:80")
+  conn = httplib.HTTPSConnection("www.ukhas.net")
   conn.request("POST", "/api/upload", params, headers)
   response = conn.getresponse()
   if(response.status!=200):
