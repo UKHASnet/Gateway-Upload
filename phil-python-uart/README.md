@@ -1,9 +1,12 @@
 phil-python-uart
 ==========
 
-This script uses Python with Python-Serial to listen on the Pi's UART for messages sent over by the UKHASnet Microcontroller (eg. arduino). The microcontroller code must be set to output the packets over its UART according to the spec below. This is the formatting used by my node code at https://github.com/philcrump/UKHASnet_nodes/tree/master/arduino_gateway
+This script is designed to be used on Raspberry Pi to listen for messages transferred over the GPIO UART from a Gateway Node. It is compatible with the AVR Gateway code at https://github.com/UKHASnet/UKHASnet_Firmware/tree/master/arduino_gateway
 
-This uses the /dev/ttyAMA0 port, at 9600 baud. If you haven't done so already, you'll need to disable the linux console present by default on this port.
+This uses the /dev/ttyAMA0 port, at 9600 baud. To set a Pi up for this, run 'sudo raspi-config' then -> Advanced -> Serial Port and Disable the console. Then reboot. All dependencies are pre-installed on raspbian.
+
+To run the script, use 'python ukhasnet-upload.py'. You can run this as a service or in a screen session.
+
 
 Packet
 ======
