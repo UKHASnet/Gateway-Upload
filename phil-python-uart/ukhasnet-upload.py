@@ -3,6 +3,7 @@ import serial
 import httplib,urllib
 import sys
 import datetime
+import traceback
 
 # Callsign of gateway node
 gateway_callsign='CHANGEME'
@@ -10,12 +11,13 @@ gateway_callsign='CHANGEME'
 upload=False
 
 def upload_data( line, rssi=None ):
-  params = urllib.urlencode({'origin': gateway_callsign, 'data': line})
+  params = {'origin': gateway_callsign, 'data': line}
   if rssi:
     params['rssi'] = rssi
+  body = urllib.urlencode(params)
   headers = {"Content-type": "application/x-www-form-urlencoded","Accept": "text/plain"}
   conn = httplib.HTTPSConnection("www.ukhas.net")
-  conn.request("POST", "/api/upload", params, headers)
+  conn.request("POST", "/api/upload", body, headers)
   response = conn.getresponse()
   data = response.read()
   if(response.status!=200):
@@ -45,6 +47,7 @@ try:
 	        else:
 	            upload_data(data_line)
        except Exception, e:
+           traceback.print_exc()
            continue
 except KeyboardInterrupt:
     print "Ctrl+C Detected, quitting.."
