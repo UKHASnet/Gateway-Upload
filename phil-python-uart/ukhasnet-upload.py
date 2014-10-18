@@ -2,29 +2,22 @@
 import serial
 import httplib,urllib
 import sys
+import datetime
+import traceback
 
 # Callsign of gateway node
 gateway_callsign='CHANGEME'
 # Should we upload to ukhas.net? Disable for debugging
 upload=False
 
-def upload_data( line ):
-  params = urllib.urlencode({'origin': gateway_callsign, 'data': line})
+def upload_data( line, rssi=None ):
+  params = {'origin': gateway_callsign, 'data': line}
+  if rssi:
+    params['rssi'] = rssi
+  body = urllib.urlencode(params)
   headers = {"Content-type": "application/x-www-form-urlencoded","Accept": "text/plain"}
   conn = httplib.HTTPSConnection("www.ukhas.net")
-  conn.request("POST", "/api/upload", params, headers)
-  response = conn.getresponse()
-  data = response.read()
-  if(response.status!=200):
-    print 'Upload Failed: '+data
-  conn.close()
-  return
-
-def upload_data_rssi( line, rssi ):
-  params = urllib.urlencode({'origin': gateway_callsign, 'data': line, 'rssi': rssi})
-  headers = {"Content-type": "application/x-www-form-urlencoded","Accept": "text/plain"}
-  conn = httplib.HTTPSConnection("www.ukhas.net")
-  conn.request("POST", "/api/upload", params, headers)
+  conn.request("POST", "/api/upload", body, headers)
   response = conn.getresponse()
   data = response.read()
   if(response.status!=200):
@@ -37,6 +30,9 @@ if(gateway_callsign=='CHANGEME'):
     print 'Exiting...'
     sys.exit()
 
+if not upload:
+    print 'WARNING: Upload disabled'
+
 node = serial.Serial('/dev/ttyAMA0', 9600, timeout=1)
 
 try:
@@ -44,13 +40,14 @@ try:
        try:
         data_line = node.readline().rstrip()
         if(data_line.__len__() > 0):
-	    print(data_line)
+	    print(str(datetime.datetime.now()) + ' ' + data_line)
 	    if upload:
 	        if "|" in data_line: # Check for RSSI
-	            upload_data_rssi(data_line.split("|")[0],data_line.split("|")[1])
+	            upload_data(data_line.split("|")[0],data_line.split("|")[1])
 	        else:
 	            upload_data(data_line)
        except Exception, e:
+           traceback.print_exc()
            continue
 except KeyboardInterrupt:
     print "Ctrl+C Detected, quitting.."
