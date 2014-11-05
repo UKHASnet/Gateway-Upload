@@ -11,20 +11,15 @@ To run the script, use 'python ukhasnet-upload.py'. You can run this as a servic
 Packet
 ======
 
-The script waits for a packet line to come in, eg:
+A packet line should be sent from the node over the UART with a speed of 9600 baud in the following format. All packets should be followed by a newline. Any additional whitespace will be trimmed.
 
-	rx: 3aT23.4V4.56[EG]
+    3aT23.4V4.56[EG]
 
-The preceding 'rx: ' will be trimmed off if it exists and the resulting string will have to pass a simple regex match before uploading. This regex allows debugging statements to be interleaved with the packets, however care should be taken that the debugging messages could not be matched.
+or
 
-RSSI
-======
+    3aT23.4V4.56[EG]|-30
 
-RSSI can optionally be sent with each uploaded packet. If this is enabled then the script will wait after receiving a packet line, for a line that must follow imediately, similar to below:
-
-	RSSI: -30
-
-Would be a value of -30dBm, this will be parsed and uploaded to the server with the packet.
+to submit an optional 'gateway rssi' of -30dBm to the server with the packet.
 
 
 MIT License - Copyright 2014 Phil Crump
