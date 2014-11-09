@@ -21,6 +21,7 @@ include Curses
 gateway_ID = 'AH4'
 port_str="/dev/tty.usbmodem1421"
 track_ID = "AH2"
+fname = "#{track_ID}_log.csv"
 
 class String
   def numeric?
@@ -170,6 +171,13 @@ while true do
                     addstr("#{track_array}")
                     setpos(22,0)
                     addstr("Total: #{total_packets} Average: #{average.to_i}")
+                    
+                    if number % 25 ==0
+                        #Save to log file for future review (with timestamp)
+                        logfile = File.open(fname, "a")
+                        logfile.puts "#{Time.now},#{average.to_i}"
+                        logfile.close
+                    end
                     
                     refresh
 
