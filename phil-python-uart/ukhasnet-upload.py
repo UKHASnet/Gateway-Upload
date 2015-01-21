@@ -11,7 +11,7 @@ gateway_callsign='CHANGEME'
 upload=False
 
 def upload_data( line, rssi=None ):
-  params = {'origin': gateway_callsign, 'data': line}
+  params = {'origin': gateway_callsign, 'data': line.replace('\x00', '')}
   if rssi:
     params['rssi'] = rssi
   body = urllib.urlencode(params)
