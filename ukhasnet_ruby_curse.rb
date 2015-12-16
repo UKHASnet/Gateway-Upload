@@ -18,10 +18,8 @@ require "curses"
 include Curses
 
 #SETTINGS THAT NEED TO BE CHANGED
-gateway_ID = 'AH4'
-port_str="/dev/tty.usbmodem1421"
-track_ID = "AH2"
-fname = "#{track_ID}_log.csv"
+gateway_ID = 'AB'
+port_str="/dev/tty.SLAB_USBtoUART"
 
 class String
   def numeric?
@@ -38,6 +36,8 @@ table_pos = 10
 
 setpos(0,0)
 addstr("UKHASnet Ruby Gateway")
+setpos(7,0)
+addstr("Boot Time: #{Time.now}")
 setpos(1,0)
 addstr("***********************************************")
 setpos(9,0)
@@ -61,10 +61,8 @@ complete_id = [gateway_ID]
 rssi_array = [0]
 time_array = [0]
 packet_array = [0]
-track_array = Array.new(25)
-old_position_track = 0
 
-baud_rate=9600
+baud_rate=115200
 data_bits=8
 stop_bits=1
 parity=SerialPort::NONE
@@ -78,7 +76,7 @@ while true do
     addstr("***#{Time.now}")
     sp_char = sp.readline
         if sp_char
-            #puts sp_char
+#            puts sp_char
             if sp_char[0..1] == 'rx'
                 packet = sp_char[4..-1] #remove the first 4 characters 'r' 'x' ':' ' '
                 #sp.flush_input
@@ -140,55 +138,20 @@ while true do
                         addstr("#{packet_array[index]}")
                     end
                     
-                    if id.first == track_ID
-                        position_track = packet_data[1].ord - 98
-                        track_array[position_track] = packet_data[1]
-                        
-                        if position_track == 24
-                            position_track = 0
-                        end
-                        
-                        if position_track > old_position_track + 1
-                            for i in (old_position_track + 1)..(position_track - 1)
-                                track_array[i] = nil
-                            end
-                        end
-
-                        
-                        total = track_array.clone
-                        total_packets = (total.uniq.length) - 1
-                        
-                        
-                        average = (total_packets / 25.0) * 100
-                        track_array[position_track + 1] = nil
-                        old_position_track = position_track
-                    end
-                    
-                    setpos(19,0)
-                    addstr("Tracking node: #{track_ID}")
-                    setpos(20,0)
-                    #addstr("#{packet_data[1].ord - 96}")
-                    addstr("#{track_array}")
-                    setpos(22,0)
-                    addstr("Total: #{total_packets} Average: #{average.to_i}")
-                    
-                    if number % 25 ==0
-                        #Save to log file for future review (with timestamp)
-                        logfile = File.open(fname, "a")
-                        logfile.puts "#{Time.now},#{average.to_i}"
-                        logfile.close
-                    end
-                    
                     refresh
 
                     #Send to UKHASnet
-                    req.set_form_data({
+                    req = Net::HTTP::Post.new(uri)
+		    req.set_form_data({
                                       'origin'    => gateway_ID,
                                       'data' => packet_data,
                                       'rssi' => rx_rssi
                                       })
-                    res = Net::HTTP.new(uri.host, uri.port).start { |http| http.request(req) }
-                    #puts res #this is the debug from uploading
+	            #res = Net::HTTP.new(uri.host, uri.port).start { |http| http.request(req) }
+                    res = Net::HTTP.start(uri.hostname, uri.port) do |http|
+  			http.request(req)
+		    end    
+		   # puts res #this is the debug from uploading
                     sleep 1
                 end
             end
